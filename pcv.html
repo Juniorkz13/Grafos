@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Visualização do PCV com D3.js</title>
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+    </head>
+    <body>
+        <svg id="graph" width="500" height="500"></svg>
+
+        <script>
+            const pcv = (grafo) => {
+                const n = Object.keys(grafo).length
+                let caminhoMinimo = null
+                let distanciaMinima = Infinity
+
+                const permuta = (arr, inicio) => {
+                    if (inicio === n - 1) {
+                        const dist = caclulaDistanciaCaminho(arr, grafo)
+                        if (dist < distanciaMinima) {
+                            distanciaMinima = dist
+                            caminhoMinimo = arr.slice()
+                        }
+                    } else {
+                        for (let i = inicio; i < n; i++) {
+                            ;[arr[inicio], arr[i]] = [arr[i], arr[inicio]]
+                            permuta(arr, inicio + 1)
+                            ;[arr[inicio], arr[i]] = [arr[i], arr[inicio]]
+                        }
+                    }
+                }
+
+                const caclulaDistanciaCaminho = (caminho, grafo) => {
+                    let dist = 0
+                    for (let i = 0; i < n - 1; i++) {
+                        dist += grafo[caminho[i]][caminho[i + 1]]
+                    }
+                    dist += grafo[caminho[n - 1]][caminho[0]]
+                    return dist
+                }
+
+                permuta(Object.keys(grafo), 0)
+
+                return { caminho: caminhoMinimo, distancia: distanciaMinima }
+            }
+
+            const grafo = {
+                A: { B: 1, C: 3, E: 4 },
+                B: { A: 1, C: 3, D: 1 },
+                C: { A: 3, B: 3, D: 6, E: 2 },
+                D: { B: 1, C: 6, E: 7 },
+                E: { A: 4, C: 2, D: 7 }
+            }
+
+            const result = pcv(grafo)
+            const caminho = result.caminho
+            const distancia = result.distancia
+
+            const width = 500
+            const height = 500
+
+            const xScale = d3
+                .scaleLinear()
+                .domain([0, Object.keys(grafo).length])
+                .range([50, width - 50])
+
+            const yScale = d3
+                .scaleLinear()
+                .domain([0, Object.keys(grafo).length])
+                .range([50, height - 50])
+
+            const svg = d3.select('#graph').attr('width', width).attr('height', height)
+
+            // Desenha as linhas do caminho percorrido
+            svg.selectAll('line')
+                .data(caminho)
+                .enter()
+                .append('line')
+                .attr('x1', (d, i) => xScale(Object.keys(grafo).indexOf(caminho[i])))
+                .attr('y1', (d, i) => yScale(Object.keys(grafo).indexOf(caminho[i])))
+                .attr('x2', (d, i) =>
+                    xScale(Object.keys(grafo).indexOf(caminho[(i + 1) % caminho.length]))
+                )
+                .attr('y2', (d, i) =>
+                    yScale(Object.keys(grafo).indexOf(caminho[(i + 1) % caminho.length]))
+                )
+                .attr('stroke', 'red')
+                .attr('stroke-width', 2)
+                .append('title')
+                .text((d, i) => `${caminho[i]} - ${caminho[(i + 1) % caminho.length]}`)
+
+            // Desenha os círculos representando as cidades
+            svg.selectAll('circle')
+                .data(Object.keys(grafo))
+                .enter()
+                .append('circle')
+                .attr('cx', (d, i) => xScale(i))
+                .attr('cy', (d, i) => yScale(i))
+                .attr('r', 10)
+                .attr('fill', 'white')
+                .attr('stroke', 'red')
+                .attr('stroke-width', 2)
+                .append('title')
+                .text((d) => `Vértice: ${d}`)
+
+            // Exibe o caminho mínimo e a distância mínima
+            svg.append('text')
+                .attr('x', 100)
+                .attr('y', 20)
+                .text(`Caminho mínimo: ${caminho.join(' -> ')}`)
+
+            svg.append('text').attr('x', 100).attr('y', 40).text(`Distância mínima: ${distancia}`)
+
+            console.log('Caminho mínimo:', caminho)
+            console.log('Distância mínima:', distancia)
+        </script>
+    </body>
+</html>
