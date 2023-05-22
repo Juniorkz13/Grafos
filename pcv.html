@@ -1,14 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
     <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Visualização do PCV com D3.js</title>
-        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <title>Visualização do PCV</title>
+        <script
+            type="text/javascript"
+            src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
+        ></script>
+        <style type="text/css">
+            #grafo-container {
+                width: 600px;
+                height: 600px;
+            }
+
+            #resultado {
+                margin-top: 20px;
+                padding-left: 20px;
+            }
+        </style>
     </head>
     <body>
-        <svg id="graph" width="500" height="500"></svg>
-
+        <div id="grafo-container"></div>
+        <div id="resultado"></div>
         <script>
             const pcv = (grafo) => {
                 const n = Object.keys(grafo).length
@@ -57,63 +69,83 @@
             const caminho = result.caminho
             const distancia = result.distancia
 
-            const width = 500
-            const height = 500
+            const caminhoMinimo = pcv(grafo).caminho
 
-            const xScale = d3
-                .scaleLinear()
-                .domain([0, Object.keys(grafo).length])
-                .range([50, width - 50])
+            // Criar um novo grafo vis.Network
+            const container = document.getElementById('grafo-container')
 
-            const yScale = d3
-                .scaleLinear()
-                .domain([0, Object.keys(grafo).length])
-                .range([50, height - 50])
+            const nodes = new vis.DataSet(
+                Object.keys(grafo).map((node) => ({
+                    id: node,
+                    label: node,
+                    color: 'black',
+                    shadow: true,
+                    shapeProperties: {
+                        interpolation: true
+                    },
+                    smooth: { enabled: true },
+                    labelHighlightBold: true,
+                    font: { size: 20, face: 'arial', color: 'white' },
+                    margin: 15,
+                    borderWidth: 2,
+                    shape: 'circle',
+                    size: 30,
+                    fixed: { x: false, y: false },
+                    value: 1,
+                    group: 1,
+                    mass: 1,
+                    physics: true
+                }))
+            )
+            const edges = new vis.DataSet()
 
-            const svg = d3.select('#graph').attr('width', width).attr('height', height)
+            // Percorrer o grafo e adicionar as arestas
+            Object.entries(grafo).forEach(([from, to]) => {
+                Object.entries(to).forEach(([to, weight]) => {
+                    if (
+                        !edges.get({ filter: (item) => item.from === to && item.to === from })
+                            .length
+                    ) {
+                        edges.add({
+                            from,
+                            to,
+                            label: weight.toString(),
+                            color: 'orange',
+                            shadow: true,
+                            smooth: { enabled: true },
+                            font: { size: 20, face: 'arial', color: 'black' },
+                            labelHighlightBold: true,
+                            width: 3,
+                            length: 150,
+                            physics: true,
+                            value: 1,
+                            group: 1,
+                            mass: 1
+                        })
+                    }
+                })
+            })
 
-            // Desenha as linhas do caminho percorrido
-            svg.selectAll('line')
-                .data(caminho)
-                .enter()
-                .append('line')
-                .attr('x1', (d, i) => xScale(Object.keys(grafo).indexOf(caminho[i])))
-                .attr('y1', (d, i) => yScale(Object.keys(grafo).indexOf(caminho[i])))
-                .attr('x2', (d, i) =>
-                    xScale(Object.keys(grafo).indexOf(caminho[(i + 1) % caminho.length]))
-                )
-                .attr('y2', (d, i) =>
-                    yScale(Object.keys(grafo).indexOf(caminho[(i + 1) % caminho.length]))
-                )
-                .attr('stroke', 'red')
-                .attr('stroke-width', 2)
-                .append('title')
-                .text((d, i) => `${caminho[i]} - ${caminho[(i + 1) % caminho.length]}`)
+            const data = { nodes, edges }
+            const options = {}
+            const network = new vis.Network(container, data, options)
 
-            // Desenha os círculos representando as cidades
-            svg.selectAll('circle')
-                .data(Object.keys(grafo))
-                .enter()
-                .append('circle')
-                .attr('cx', (d, i) => xScale(i))
-                .attr('cy', (d, i) => yScale(i))
-                .attr('r', 10)
-                .attr('fill', 'white')
-                .attr('stroke', 'red')
-                .attr('stroke-width', 2)
-                .append('title')
-                .text((d) => `Vértice: ${d}`)
+            // Destacar o caminho mínimo no grafo
+            const highlightedEdges = caminhoMinimo.map((node, index) => {
+                const from = node
+                const to = caminhoMinimo[(index + 1) % caminhoMinimo.length]
+                const edgeId = edges.getIds().find((id) => {
+                    const edge = edges.get(id)
+                    return edge.from === from && edge.to === to
+                })
+                return edgeId
+            })
 
-            // Exibe o caminho mínimo e a distância mínima
-            svg.append('text')
-                .attr('x', 100)
-                .attr('y', 20)
-                .text(`Caminho mínimo: ${caminho.join(' -> ')}`)
-
-            svg.append('text').attr('x', 100).attr('y', 40).text(`Distância mínima: ${distancia}`)
-
-            console.log('Caminho mínimo:', caminho)
-            console.log('Distância mínima:', distancia)
+            // Mostrar o caminho mínimo e distância
+            const resultado = document.getElementById('resultado')
+            resultado.innerHTML = `Caminho mínimo: ${caminhoMinimo.join(
+                ' -> '
+            )}<br>Distância: ${distancia}`
         </script>
     </body>
 </html>

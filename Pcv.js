@@ -41,4 +41,11 @@ const grafo = {
     E: { A: 4, C: 2, D: 7 }
 }
 
-console.log(pcv(grafo))
+const result = pcv(grafo)
+const caminho = result.caminho
+const distancia = result.distancia
+
+const caminhoMinimo = pcv(grafo).caminho
+
+console.log(caminhoMinimo)
+console.log(distancia)
