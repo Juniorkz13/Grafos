@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="estilo.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Oswald&display=swap"
+            rel="stylesheet"
+        />
+        <title>PCV - Caixeiro Viajante</title>
+    </head>
+    <body>
+        <h1>Problema do Caixeiro Viajante</h1>
+
+        <label for="cidadeInicial">Cidade Inicial/Final:</label>
+        <select id="cidadeInicial"></select>
+
+        <button onclick="calcularRota()" class="button">Calcular Rota</button>
+
+        <h2>Rota:</h2>
+        <div id="loaderRota" class="custom-loader"></div>
+        <p id="rota"></p>
+
+        <h2>Total de KM percorridos:</h2>
+        <div id="loaderDistancia" class="custom-loader"></div>
+        <p id="distanciaTotal"></p>
+
+        <div class="explicando">
+            <h2>Explicando o algoritmo:</h2>
+            <p>Os detalhes do código podem ser observados clicando <a href="http://">aqui</a>.</p>
+            <p>
+                A função encontrarMelhorRota implementa um algoritmo para encontrar a melhor rota
+                aproximada para o Problema do Caixeiro Viajante (PCV) com base em uma matriz de
+                distâncias entre as cidades.
+            </p>
+            <ol>
+                <li>
+                    <span>numCidades = cidades.length</span>: Obtém o número total de cidades no
+                    problema.
+                </li>
+                <li>
+                    <span>visitado = Array(numCidades).fill(false)</span>: Cria um array chamado
+                    visitado com o tamanho igual ao número de cidades e preenche-o com o valor
+                    false. Esse array é usado para rastrear quais cidades foram visitadas durante a
+                    construção da rota.
+                </li>
+                <li>
+                    <span>const rota = []</span>: Cria um array vazio chamado rota que irá armazenar
+                    a sequência de cidades visitadas.
+                </li>
+                <li>
+                    <span>let cidadeAtualIndex = cidadeInicialIndex</span>: Define o índice da
+                    cidade inicial como a cidade atual para iniciar a construção da rota.
+                </li>
+                <li>
+                    <span>visitado[cidadeAtualIndex] = true</span>: Marca a cidade inicial como
+                    visitada.
+                </li>
+                <li>
+                    <span>rota.push(cidades[cidadeAtualIndex]):</span> Adiciona a cidade inicial à
+                    rota.
+                </li>
+                <li>
+                    <span>while (rota.length < numCidades)</span>: Inicia um loop que continua até
+                    que todas as cidades tenham sido visitadas e adicionadas à rota.
+                </li>
+                <li>
+                    No loop, a função percorre a matriz de distâncias para a cidade atual e encontra
+                    a próxima cidade não visitada mais próxima.
+                </li>
+                <li>
+                    <span
+                        >if (i !== cidadeAtualIndex && !visitado[i] &&
+                        matrizDistancias[cidadeAtualIndex][i] < menorDistancia)</span
+                    >: Verifica se a cidade atual <span>(cidadeAtualIndex)</span> é diferente da
+                    cidade atualmente avaliada (i), se a cidade atualmente avaliada não foi visitada
+                    e se a distância entre a cidade atual e a cidade avaliada é menor do que a menor
+                    distância atualmente registrada.
+                </li>
+                <li>
+                    Se a condição for verdadeira, a próxima cidade a ser visitada é atualizada para
+                    a cidade atualmente avaliada <span>(proximaCidadeIndex = i)</span> e a menor
+                    distância também é atualizada
+                    <span>(menorDistancia = matrizDistancias[cidadeAtualIndex][i])</span>.
+                </li>
+                <li>
+                    Após percorrer todas as cidades, a próxima cidade a ser visitada é definida como
+                    a cidade atual <span>(cidadeAtualIndex = proximaCidadeIndex)</span>, marcada
+                    como visitada <span>(visitado[cidadeAtualIndex] = true)</span> e adicionada à
+                    rota <span>(rota.push(cidades[cidadeAtualIndex]))</span>.
+                </li>
+                <li>
+                    Após o término do loop, a função adiciona a cidade inicial novamente à rota para
+                    completar o circuito <span>(rota.push(cidades[cidadeInicialIndex]))</span>.
+                </li>
+                <li>Por fim, a função retorna a rota completa.</li>
+            </ol>
+        </div>
+
+        <script src="pcvTrabalho.js"></script>
+        <script>
+            popularSelectCidades()
+        </script>
+    </body>
+</html>
